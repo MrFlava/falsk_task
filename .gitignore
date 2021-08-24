@@ -1,0 +1,10 @@
+*.egg-info
+.idea/
+.venv/
+__pycache__/
+.media/
+.coverage
+**/local_settings.py
+/db.sqlite3
+/
+/media/
