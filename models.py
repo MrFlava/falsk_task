@@ -1,25 +1,44 @@
-from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship, backref, declarative_base
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Table, ForeignKey
+from flask_security import current_user, login_required, RoleMixin, Security, SQLAlchemyUserDatastore, UserMixin
+
+from database import Base
 
 db = SQLAlchemy()
 
 
-class User(db.Model, UserMixin):
-    __tablename__ = 'User'
+class RolesUsers(Base):
+    __tablename__ = 'roles_users'
+
+    id = Column(Integer(), primary_key=True)
+    user_id = Column('user_id', Integer(), ForeignKey('user.id'))
+    role_id = Column('role_id', Integer(), ForeignKey('role.id'))
+
+
+class Role(Base, RoleMixin):
+    __tablename__ = 'role'
+
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(80), unique=True)
+    description = Column(String(255))
+
+
+class User(Base, UserMixin):
+    __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(80), unique=True)
+    email = Column(String(255), unique=True)
+    password = Column(String(255))
+    active = Column(Boolean())
+    confirmed_at = Column(DateTime())
+    roles = relationship('Role', secondary='roles_users',
+                         backref=backref('users', lazy='dynamic'))
 
-    def __init__(self, username):
-        self.username = username
 
-    def __repr__(self):
-        return '<User %r>' % self.username
+class Item(Base):
+    __tablename__ = 'item'
 
-
-class Item(db.Model):
-    __tablename__ = 'Item'
     id = Column(Integer, primary_key=True)
     color = Column(String(80))
     weight = Column(Integer, default=0)
@@ -34,8 +53,9 @@ class Item(db.Model):
         return '<Item %r>' % self.color
 
 
-class DeliveryAddress(db.Model):
-    __tablename__ = 'Delivery'
+class DeliveryAddress(Base):
+    __tablename__ = 'delivery'
+
     id = Column(Integer, primary_key=True)
     country = Column(String(120))
     city = Column(String(120))
@@ -48,4 +68,3 @@ class DeliveryAddress(db.Model):
 
     def __repr__(self):
         return '<Address %r>' % self.country
-
