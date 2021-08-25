@@ -1,9 +1,6 @@
 from flask import Flask
 from flask_admin import Admin
-from flask_login import UserMixin
-from flask_sqlalchemy import SQLAlchemy
 from flask_admin.contrib.sqla import ModelView
-from sqlalchemy import Column, Integer, String
 
 from models import db, User, Item, DeliveryAddress
 
