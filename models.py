@@ -1,48 +1,39 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship, backref, declarative_base
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Table, ForeignKey
-from flask_security import current_user, login_required, RoleMixin, Security, SQLAlchemyUserDatastore, UserMixin
-
-from database import Base
+from flask_security import UserMixin
 
 db = SQLAlchemy()
 
-
-class RolesUsers(Base):
-    __tablename__ = 'roles_users'
-
-    id = Column(Integer(), primary_key=True)
-    user_id = Column('user_id', Integer(), ForeignKey('user.id'))
-    role_id = Column('role_id', Integer(), ForeignKey('role.id'))
+roles_users_table = db.Table('roles_users',
+                             db.Column('users_id', db.Integer(), db.ForeignKey('users.id')),
+                             db.Column('roles_id', db.Integer(), db.ForeignKey('roles.id')))
 
 
-class Role(Base, RoleMixin):
-    __tablename__ = 'role'
+class Roles(db.Model):
+    __tablename__ = 'roles'
 
-    id = Column(Integer(), primary_key=True)
-    name = Column(String(80), unique=True)
-    description = Column(String(255))
-
-
-class User(Base, UserMixin):
-    __tablename__ = 'user'
-
-    id = Column(Integer, primary_key=True)
-    email = Column(String(255), unique=True)
-    password = Column(String(255))
-    active = Column(Boolean())
-    confirmed_at = Column(DateTime())
-    roles = relationship('Role', secondary='roles_users',
-                         backref=backref('users', lazy='dynamic'))
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
 
 
-class Item(Base):
-    __tablename__ = 'item'
+class Users(db.Model, UserMixin):
+    __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
-    color = Column(String(80))
-    weight = Column(Integer, default=0)
-    price = Column(Integer, default=0)
+    id = db.Column(db.Integer(), primary_key=True)
+    email = db.Column(db.String(255), unique=True)
+    password = db.Column(db.String(80))
+    active = db.Column(db.Boolean())
+
+    roles = db.relationship('Roles', secondary=roles_users_table, backref='user', lazy=True)
+
+
+class Items(db.Model):
+    __tablename__ = 'items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    color = db.Column(db.String(80))
+    weight = db.Column(db.Integer, default=0)
+    price = db.Column(db.Integer, default=0)
 
     def __init__(self, color, weight, price):
         self.color = color
@@ -53,13 +44,13 @@ class Item(Base):
         return '<Item %r>' % self.color
 
 
-class DeliveryAddress(Base):
+class DeliveryAddress(db.Model):
     __tablename__ = 'delivery'
 
-    id = Column(Integer, primary_key=True)
-    country = Column(String(120))
-    city = Column(String(120))
-    street = Column(String(120))
+    id = db.Column(db.Integer, primary_key=True)
+    country = db.Column(db.String(120))
+    city = db.Column(db.String(120))
+    street = db.Column(db.String(120))
 
     def __init__(self, country, city, street):
         self.country = country
