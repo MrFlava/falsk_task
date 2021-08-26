@@ -7,4 +7,5 @@ __pycache__/
 **/local_settings.py
 /db.sqlite3
 /database.db
+/test_database.db
 /media/
