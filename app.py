@@ -1,56 +1,117 @@
-from flask import Flask
-from flask_admin import Admin, AdminIndexView
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, redirect, render_template, url_for
+from flask_admin import Admin
+from flask_admin import helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
-from flask_security import Security, current_user, login_required, SQLAlchemySessionUserDatastore
+from flask_security import current_user, Security, SQLAlchemyUserDatastore, UserMixin
+from flask_sqlalchemy import SQLAlchemy
 
-from database import db_session, init_db
-from models import db, User, Role, Item, DeliveryAddress
+# Instantiate the Flask application with configurations
+secureApp = Flask(__name__)
+# Configure a specific Bootswatch theme
+secureApp.config['FLASK_ADMIN_SWATCH'] = 'sandstone'
+secureApp.config['SECRET_KEY'] = 'secretkey'
+secureApp.config['SECURITY_PASSWORD_SALT'] = 'none'
+# Configure application to route to the Flask-Admin index view upon login
+secureApp.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
+# Configure application to route to the Flask-Admin index view upon logout
+secureApp.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+# Configure application to route to the Flask-Admin index view upon registering
+secureApp.config['SECURITY_POST_REGISTER_VIEW'] = '/admin/'
+secureApp.config['SECURITY_REGISTERABLE'] = True
+# Configure application to not send an email upon registration
+secureApp.config['SECURITY_SEND_REGISTER_EMAIL'] = False
+secureApp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+secureApp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 
-app = Flask(__name__)
+# Instantiate the database
+db = SQLAlchemy(secureApp)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.config['SECRET_KEY'] = '8f42a73054b1749f8f58848be5e6502c'
-app.config['SECURITY_PASSWORD_SALT'] = 'some arbitrary super secret string'
-
-user_datastore = SQLAlchemySessionUserDatastore(db_session,
-                                                User, Role)
-security = Security(app, user_datastore)
-
-# Create a user to test with
-
-#
-# @app.before_first_request
-# def create_user():
-#     init_db()
-#     user_datastore.create_user(email='matt@nobien.net', password='password')
-#     db_session.commit()
-
-
-# admin = Admin(app)
-# admin.add_view(ModelView(User, db_session))
-# admin.add_view(ModelView(Role, db_session))
-# admin.add_view(ModelView(Item, db_session))
-# admin.add_view(ModelView(DeliveryAddress, db_session))
+# Create a table of users and user roles
+roles_users_table = db.Table('roles_users',
+                             db.Column('users_id', db.Integer(), db.ForeignKey('users.id')),
+                             db.Column('roles_id', db.Integer(), db.ForeignKey('roles.id')))
 
 
-class MyAdminIndexView(AdminIndexView):
-    pass
+# Define models for the users and user roles
 
 
-admin = Admin(app, 'Admin Area', template_mode='bootstrap4', index_view=MyAdminIndexView())
+class Roles(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
 
 
-@login_required
-@app.route('/login')
-def login():
-    return redirect('/admin')
+class Users(db.Model, UserMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    email = db.Column(db.String(255), unique=True)
+    password = db.Column(db.String(80))
+    active = db.Column(db.Boolean())
+
+    roles = db.relationship('Roles', secondary=roles_users_table, backref='user', lazy=True)
 
 
-@app.route('/')
+# Create a datastore and instantiate Flask-Security
+user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
+security = Security(secureApp, user_datastore)
+
+
+# Create the tables for the users and roles and add a user to the user table
+# This decorator registers a function to be run before the first request to the app
+#  i.e. calling localhost:5000 from the browser
+@secureApp.before_first_request
+def create_user():
+    db.drop_all()
+    db.create_all()
+    user_datastore.create_user(email='admin', password='admin')
+    db.session.commit()
+
+
+# Instantiate Flask-Admin
+admin = Admin(secureApp, name='Admin', base_template='my_master.html', template_mode='bootstrap4')
+
+
+# Create a ModelView to add to our administrative interface
+class UserModelView(ModelView):
+    def is_accessible(self):
+        return (current_user.is_active and
+                current_user.is_authenticated)
+
+    def _handle_view(self, name):
+        if not self.is_accessible():
+            return redirect(url_for('security.login'))
+
+    column_list = ['email', 'password']
+
+
+# Add administrative views to Flask-Admin
+admin.add_view(UserModelView(Users, db.session))
+
+
+# Add the context processor
+@security.context_processor
+def security_context_processor():
+    return dict(
+        admin_base_template=admin.base_template,
+        admin_view=admin.index_view,
+        get_url=url_for,
+        h=admin_helpers
+    )
+
+
+# Define the index route
+@secureApp.route('/')
 def index():
     return render_template('index.html')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+
+    # Build a sample db on the fly, if one does not exist yet.
+    # app_dir = os.path.realpath(os.path.dirname(__file__))
+    # database_path = os.path.join(app_dir, app.config['DATABASE_FILE'])
+    # if not os.path.exists(database_path):
+    #     build_sample_db()
+
+    # Start app
+    secureApp.run(debug=True)
+
