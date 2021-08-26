@@ -4,25 +4,26 @@ from flask_admin import helpers as admin_helpers
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user, Security, SQLAlchemyUserDatastore
 
+import local_settings
 from models import db, Users, Roles, Items, DeliveryAddress
 
 # Instantiate the Flask application with configurations
 secureApp = Flask(__name__)
 # Configure a specific Bootswatch theme
-secureApp.config['FLASK_ADMIN_SWATCH'] = 'sandstone'
-secureApp.config['SECRET_KEY'] = 'secretkey'
-secureApp.config['SECURITY_PASSWORD_SALT'] = 'none'
+secureApp.config['FLASK_ADMIN_SWATCH'] = local_settings.FLASK_ADMIN_SWATCH
+secureApp.config['SECRET_KEY'] = local_settings.SECRET_KEY
+secureApp.config['SECURITY_PASSWORD_SALT'] = local_settings.SECURITY_PASSWORD_SALT
 # Configure application to route to the Flask-Admin index view upon login
-secureApp.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
+secureApp.config['SECURITY_POST_LOGIN_VIEW'] = local_settings.SECURITY_POST_LOGIN_VIEW
 # Configure application to route to the Flask-Admin index view upon logout
-secureApp.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+secureApp.config['SECURITY_POST_LOGOUT_VIEW'] = local_settings.SECURITY_POST_LOGOUT_VIEW
 # Configure application to route to the Flask-Admin index view upon registering
-secureApp.config['SECURITY_POST_REGISTER_VIEW'] = '/admin/'
-secureApp.config['SECURITY_REGISTERABLE'] = True
+secureApp.config['SECURITY_POST_REGISTER_VIEW'] = local_settings.SECURITY_POST_REGISTER_VIEW
+secureApp.config['SECURITY_REGISTERABLE'] = local_settings.SECURITY_REGISTERABLE
 # Configure application to not send an email upon registration
-secureApp.config['SECURITY_SEND_REGISTER_EMAIL'] = False
-secureApp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-secureApp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+secureApp.config['SECURITY_SEND_REGISTER_EMAIL'] = local_settings.SECURITY_SEND_REGISTER_EMAIL
+secureApp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = local_settings.SQLALCHEMY_TRACK_MODIFICATIONS
+secureApp.config['SQLALCHEMY_DATABASE_URI'] = local_settings.SQLALCHEMY_DATABASE_URI
 
 db.init_app(secureApp)
 
