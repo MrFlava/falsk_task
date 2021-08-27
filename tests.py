@@ -7,10 +7,9 @@ from models import Users, Items, DeliveryAddress
 
 
 class AppTestCase(unittest.TestCase):
-
     def test_index(self):
         tester = secureApp.test_client(self)
-        response = tester.get('/', content_type='html/text')
+        response = tester.get("/", content_type="html/text")
         self.assertEqual(response.status_code, 200)
 
     def test_database(self):
@@ -19,11 +18,10 @@ class AppTestCase(unittest.TestCase):
 
 
 class RequestsTestCase(unittest.TestCase):
-
     def setUp(self):
         """Set up a blank temp database before each test"""
-        secureApp.config['TESTING'] = True
-        secureApp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test_database.db'
+        secureApp.config["TESTING"] = True
+        secureApp.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test_database.db"
         self.app = secureApp.test_client()
         context = secureApp.app_context()
         context.push()
@@ -39,25 +37,26 @@ class RequestsTestCase(unittest.TestCase):
 
     def login(self, username, password):
         """Login helper function"""
-        return self.app.post('/login', data=dict(
-            username=username,
-            password=password
-        ), follow_redirects=True)
+        return self.app.post(
+            "/login",
+            data=dict(username=username, password=password),
+            follow_redirects=True,
+        )
 
     def logout(self):
         """Logout helper function"""
-        return self.app.get('/logout', follow_redirects=True)
+        return self.app.get("/logout", follow_redirects=True)
 
     # assert functions
 
     def test_empty_db(self):
         """Ensure database is blank"""
-        rv = self.app.get('/')
+        rv = self.app.get("/")
         self.assertEqual(rv.status_code, 200)
 
     def test_login_logout(self):
         """Test login and logout using helper functions"""
-        rv = self.login('admin', 'admin')
+        rv = self.login("admin", "admin")
         self.assertEqual(rv.status_code, 200)
         rv = self.logout()
         self.assertEqual(rv.status_code, 200)
@@ -68,8 +67,8 @@ class RequestsTestCase(unittest.TestCase):
         db.create_all()
 
         users = Users()
-        users.email = 'email@email.com'
-        users.password = 'admin123123'
+        users.email = "email@email.com"
+        users.password = "admin123123"
         users.active = False
 
         db.session.add(users)
@@ -82,8 +81,8 @@ class RequestsTestCase(unittest.TestCase):
         db.drop_all()
         db.create_all()
 
-        items = Items(color='', weight=0, price=0)
-        items.color = 'white'
+        items = Items(color="", weight=0, price=0)
+        items.color = "white"
         items.weight = 200
         items.price = 100
 
@@ -96,8 +95,8 @@ class RequestsTestCase(unittest.TestCase):
         db.drop_all()
         db.create_all()
 
-        items = DeliveryAddress(country='', city='', street='')
-        items.color = 'white'
+        items = DeliveryAddress(country="", city="", street="")
+        items.color = "white"
         items.weight = 200
         items.price = 100
 
@@ -107,5 +106,5 @@ class RequestsTestCase(unittest.TestCase):
         self.assertEqual(len(db.session.query(DeliveryAddress).all()), 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

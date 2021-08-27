@@ -3,13 +3,15 @@ from flask_security import UserMixin
 
 db = SQLAlchemy()
 
-roles_users_table = db.Table('roles_users',
-                             db.Column('users_id', db.Integer(), db.ForeignKey('users.id')),
-                             db.Column('roles_id', db.Integer(), db.ForeignKey('roles.id')))
+roles_users_table = db.Table(
+    "roles_users",
+    db.Column("users_id", db.Integer(), db.ForeignKey("users.id")),
+    db.Column("roles_id", db.Integer(), db.ForeignKey("roles.id")),
+)
 
 
 class Roles(db.Model):
-    __tablename__ = 'roles'
+    __tablename__ = "roles"
 
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True)
@@ -17,18 +19,18 @@ class Roles(db.Model):
 
 
 class Users(db.Model, UserMixin):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer(), primary_key=True)
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(80))
     active = db.Column(db.Boolean())
 
-    roles = db.relationship('Roles', secondary=roles_users_table, backref='user', lazy=True)
+    roles = db.relationship("Roles", secondary=roles_users_table, backref="user", lazy=True)
 
 
 class Items(db.Model):
-    __tablename__ = 'items'
+    __tablename__ = "items"
 
     id = db.Column(db.Integer, primary_key=True)
     color = db.Column(db.String(80))
@@ -41,11 +43,11 @@ class Items(db.Model):
         self.price = price
 
     def __repr__(self):
-        return '<Item %r>' % self.color
+        return "<Item %r>" % self.color
 
 
 class DeliveryAddress(db.Model):
-    __tablename__ = 'delivery'
+    __tablename__ = "delivery"
 
     id = db.Column(db.Integer, primary_key=True)
     country = db.Column(db.String(120))
@@ -58,4 +60,4 @@ class DeliveryAddress(db.Model):
         self.street = street
 
     def __repr__(self):
-        return '<Address %r>' % self.country
+        return "<Address %r>" % self.country
