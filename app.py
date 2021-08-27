@@ -4,21 +4,21 @@ from flask_admin import helpers as admin_helpers
 from flask import Flask, redirect, render_template, url_for
 from flask_security import current_user, Security, SQLAlchemyUserDatastore
 
-import local_settings
+import settings
 from models import db, Users, Roles, Items, DeliveryAddress
 
 secureApp = Flask(__name__)
 
-secureApp.config["FLASK_ADMIN_SWATCH"] = local_settings.FLASK_ADMIN_SWATCH
-secureApp.config["SECRET_KEY"] = local_settings.SECRET_KEY
-secureApp.config["SECURITY_PASSWORD_SALT"] = local_settings.SECURITY_PASSWORD_SALT
-secureApp.config["SECURITY_POST_LOGIN_VIEW"] = local_settings.SECURITY_POST_LOGIN_VIEW
-secureApp.config["SECURITY_POST_LOGOUT_VIEW"] = local_settings.SECURITY_POST_LOGOUT_VIEW
-secureApp.config["SECURITY_POST_REGISTER_VIEW"] = local_settings.SECURITY_POST_REGISTER_VIEW
-secureApp.config["SECURITY_REGISTERABLE"] = local_settings.SECURITY_REGISTERABLE
-secureApp.config["SECURITY_SEND_REGISTER_EMAIL"] = local_settings.SECURITY_SEND_REGISTER_EMAIL
-secureApp.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = local_settings.SQLALCHEMY_TRACK_MODIFICATIONS
-secureApp.config["SQLALCHEMY_DATABASE_URI"] = local_settings.SQLALCHEMY_DATABASE_URI
+secureApp.config["FLASK_ADMIN_SWATCH"] = settings.FLASK_ADMIN_SWATCH
+secureApp.config["SECRET_KEY"] = settings.SECRET_KEY
+secureApp.config["SECURITY_PASSWORD_SALT"] = settings.SECURITY_PASSWORD_SALT
+secureApp.config["SECURITY_POST_LOGIN_VIEW"] = settings.SECURITY_POST_LOGIN_VIEW
+secureApp.config["SECURITY_POST_LOGOUT_VIEW"] = settings.SECURITY_POST_LOGOUT_VIEW
+secureApp.config["SECURITY_POST_REGISTER_VIEW"] = settings.SECURITY_POST_REGISTER_VIEW
+secureApp.config["SECURITY_REGISTERABLE"] = settings.SECURITY_REGISTERABLE
+secureApp.config["SECURITY_SEND_REGISTER_EMAIL"] = settings.SECURITY_SEND_REGISTER_EMAIL
+secureApp.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = settings.SQLALCHEMY_TRACK_MODIFICATIONS
+secureApp.config["SQLALCHEMY_DATABASE_URI"] = settings.SQLALCHEMY_DATABASE_URI
 
 db.init_app(secureApp)
 
