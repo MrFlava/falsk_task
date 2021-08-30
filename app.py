@@ -26,6 +26,7 @@ db.init_app(secureApp)
 user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
 security = Security(secureApp, user_datastore)
 
+
 # Create the tables for the users, roles, items and delivery addresses and add a user to the user table
 # @secureApp.before_first_request
 # def create_user():
@@ -59,7 +60,7 @@ class ItemView(ModelView):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
 
-    column_list = ["color", "weight", "price"]
+    column_list = ["color", "weight", "price", "delivery_addresses"]
 
 
 class DeliveryAddressView(ModelView):

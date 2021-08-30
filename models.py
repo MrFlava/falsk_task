@@ -54,10 +54,14 @@ class DeliveryAddress(db.Model):
     city = db.Column(db.String(120))
     street = db.Column(db.String(120))
 
-    def __init__(self, country, city, street):
+    item_id = db.Column(db.BigInteger, db.ForeignKey("items.id"), nullable=False, index=True)
+    item = db.relationship("Items", backref="delivery_addresses", foreign_keys=[item_id])
+
+    def __init__(self, country, city, street, item):
         self.country = country
         self.city = city
         self.street = street
+        self.item = item
 
     def __repr__(self):
         return "<Address %r>" % self.country
